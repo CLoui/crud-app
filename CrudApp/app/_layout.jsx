@@ -8,7 +8,8 @@ export default function RootLayout() {
     <ThemeProvider>
       <SafeAreaProvider>
         <Stack>
-          <Stack.Screen name="index"/>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="todos/[id]" />
         </Stack>
       </SafeAreaProvider>
     </ThemeProvider>

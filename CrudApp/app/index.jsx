@@ -3,12 +3,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useContext, useEffect } from "react";
 import { ThemeContext } from "@/context/ThemeContext";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+MaterialIcons;
 MaterialCommunityIcons;
 
 import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
+import { useRouter } from "expo-router";
 
 import Octicons from '@expo/vector-icons/Octicons'
 import { data } from "@/data/todos"
@@ -18,6 +21,7 @@ export default function Index() {
   const [text, setText] = useState('')
   const { colorScheme, setColorScheme, theme } = useContext(ThemeContext)
   const [loaded, error] = useFonts({ Inter_500Medium })
+  const router = useRouter()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,6 +79,10 @@ export default function Index() {
     setTodos(todos.filter(todo => todo.id !== id))
   }
 
+  const handlePress = (id) => {
+    router.push(`/todos/${id}`)
+  }
+
   const renderItem = ({ item }) => (
     <View style={styles.todoItem}>
       <Text
@@ -83,6 +91,9 @@ export default function Index() {
       >
         {item.title}
       </Text>
+      <Pressable onPress={() => handlePress(item.id)}>
+        <MaterialIcons name="mode-edit" size={36} color='royalblue' selectable={undefined} />
+      </Pressable>
       <Pressable onPress={() => removeTodo(item.id)}>
         <MaterialCommunityIcons name="delete" size={36} color='royalblue' selectable={undefined}/>
       </Pressable>
@@ -94,6 +105,7 @@ export default function Index() {
       <View style={styles.inputContainer}>
         <TextInput 
           style={styles.input}
+          maxLength={30}
           placeholder="Add a new todo"
           placeholderTextColor="gray"
           value={text}
