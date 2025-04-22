@@ -7,11 +7,11 @@ export const data = [
     {
         "id": 2,
         "title": "Buy groceries",
-        "completed": true
+        "completed": false
     },
     {
         "id": 3,
         "title": "Wash clothes",
-        "completed": true
+        "completed": false
     }
 ]
