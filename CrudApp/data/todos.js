@@ -2,16 +2,19 @@ export const data = [
     {
         "id": 1,
         "title": "Finish book",
-        "completed": true
+        "completed": true,
+        "starred": false,
     },
     {
         "id": 2,
         "title": "Buy groceries",
-        "completed": false
+        "completed": false,
+        "starred": false,
     },
     {
         "id": 3,
         "title": "Wash clothes",
-        "completed": false
+        "completed": false,
+        "starred": false,
     }
 ]

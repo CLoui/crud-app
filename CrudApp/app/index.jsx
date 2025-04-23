@@ -1,6 +1,6 @@
 import { Text, View, TextInput, Pressable, StyleSheet, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useCallback } from "react";
 import { ThemeContext } from "@/context/ThemeContext";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -11,10 +11,12 @@ import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
-import Octicons from '@expo/vector-icons/Octicons'
-import { data } from "@/data/todos"
+import Octicons from '@expo/vector-icons/Octicons';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { data } from "@/data/todos";
 
 export default function Index() {
   const [todos, setTodos] = useState([])
@@ -40,6 +42,7 @@ export default function Index() {
     }
 
     fetchData()
+    console.log('index: ', data)
   }, [data])
 
   useEffect(() => {
@@ -53,6 +56,7 @@ export default function Index() {
     }
 
     storeData()
+    console.log('index: ', todos)
   }, [todos])
 
   if (!loaded && !error) {
@@ -64,7 +68,7 @@ export default function Index() {
   const addTodo = () => {
     if (text.trim()) {
       const newId = todos.length > 0 ? todos[0].id + 1 : 1;
-      setTodos([{id: newId, title: text, completed: false}, ...todos])
+      setTodos([{id: newId, title: text, completed: false, starred: false}, ...todos])
       setText('')
     }
   }
@@ -75,23 +79,39 @@ export default function Index() {
     ))
   }
 
+  const toggleStar = (id) => {
+    setTodos(todos.map(todo => 
+      todo.id === id ? { ...todo, starred: !todo.starred } : todo
+    ))
+  }
+
   const removeTodo = (id) => {
     setTodos(todos.filter(todo => todo.id !== id))
   }
 
-  const handlePress = (id) => {
+  const handleEditPress = (id) => {
     router.push(`/todos/${id}`)
   }
 
+  const handleAddPress = () => {
+    router.push('/todos/add')
+  }
+
   const renderItem = ({ item }) => (
-    <View style={styles.todoItem}>
+    <View style={[styles.todoItem, item.starred && styles.starred]}>
       <Text
         style={[styles.todoText, item.completed && styles.completedText]}
         onPress={() => toggleTodo(item.id)}
       >
         {item.title}
       </Text>
-      <Pressable onPress={() => handlePress(item.id)}>
+      <Pressable onPress={() => toggleStar(item.id)}>
+        {item.starred
+          ? <AntDesign name="star" size={36} color='royalblue'/>
+          : <AntDesign name="staro" size={36} color='royalblue'/>
+        } 
+      </Pressable>
+      <Pressable onPress={() => handleEditPress(item.id)}>
         <MaterialIcons name="mode-edit" size={36} color='royalblue' selectable={undefined} />
       </Pressable>
       <Pressable onPress={() => removeTodo(item.id)}>
@@ -103,29 +123,38 @@ export default function Index() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.inputContainer}>
-        <TextInput 
-          style={styles.input}
-          maxLength={30}
-          placeholder="Add a new todo"
-          placeholderTextColor="gray"
-          value={text}
-          onChangeText={setText}
-        />
-        <Pressable onPress={addTodo} style={styles.addButton}>
-          <Text style={styles.addButtonText}>Add</Text>
+        <Pressable onPress={() => handleAddPress()}>
+          <Ionicons name="add-circle" size={44} color="royalblue" />
         </Pressable>
         <Pressable
           onPress={() => setColorScheme(colorScheme === 'light' ? 'dark' : 'light')}
-          style={{marginLeft: 10}}
+          style={{marginLeft: 10, flexDirection: 'row', borderWidth: 2, borderRadius: 5, borderColor: 'gray'}}
         >
-          {colorScheme === 'dark' 
-            ? <Octicons name="moon" size={36} color={theme.text} selectable={undefined} style={{ width: 36 }} />
-            : <Octicons name="sun" size={36} color={theme.text} selectable={undefined} style={{ width: 36 }} />
-          }
+          <Octicons 
+            name="moon" 
+            size={30} 
+            color={colorScheme === 'dark' ? theme.text : 'gray'} 
+            selectable={undefined} 
+            style={{ width: 36, padding: 5, paddingRight: 35, backgroundColor: 'rgba(41, 44, 51, 0.1)' }} />
+          <Octicons 
+            name="sun" 
+            size={30} 
+            color={colorScheme === 'light' ? 'gold' : 'gray'} 
+            selectable={undefined} 
+            style={{ width: 36, padding: 5, paddingRight: 35, backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
         </Pressable>
       </View>
       <Animated.FlatList
-        data={todos}
+        style={styles.starredList}
+        data={todos.filter(todo => todo.starred === true)}
+        renderItem={renderItem}
+        keyExtractor={todo => todo.id}
+        contentContainerStyle={{ flexGrow: 1 }}
+        itemLayoutAnimation={LinearTransition}
+        keyboardDismissMode="on-drag" 
+      />
+      <Animated.FlatList
+        data={todos.filter(todo => todo.starred === false)}
         renderItem={renderItem}
         keyExtractor={todo => todo.id}
         contentContainerStyle={{ flexGrow: 1}}
@@ -146,6 +175,7 @@ function createStyles(theme, colorScheme) {
     inputContainer: {
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'flex-end',
       marginBottom: 10,
       padding: 10,
       width: '100%',
@@ -196,6 +226,13 @@ function createStyles(theme, colorScheme) {
     completedText: {
       textDecorationLine: 'line-through',
       color: 'gray',
+    },
+    starred: {
+      backgroundColor: theme.star,
+      borderRadius: 5,
+    },
+    starredList: {
+      flexGrow: 0,
     }
   })
 }
