@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { View, Text, StyleSheet, Pressable, TextInput, Modal } from 'react-native';
 
 import { useState, useEffect, useContext } from 'react'
@@ -7,7 +7,6 @@ import { ThemeContext } from "@/context/ThemeContext";
 import { StatusBar } from "expo-status-bar";
 import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
 
 export default function EditScreen() {
     const { id } = useLocalSearchParams()

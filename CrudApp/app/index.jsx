@@ -16,62 +16,25 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import Octicons from '@expo/vector-icons/Octicons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { data } from "@/data/todos";
+import { data, fetchLists } from "@/data/todos";
 
 export default function Index() {
   const [todos, setTodos] = useState([])
+  const [lists, setLists] = useState([])
   const [text, setText] = useState('')
   const { colorScheme, setColorScheme, theme } = useContext(ThemeContext)
   const [loaded, error] = useFonts({ Inter_500Medium })
   const router = useRouter()
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const jsonValue = await AsyncStorage.getItem("TodoApp")
-        const storageTodos = jsonValue != null ? JSON.parse(jsonValue) : null
-
-        if (storageTodos && storageTodos.length) {
-          setTodos(storageTodos.sort((a,b) => b.id - a.id))
-        } else {
-          setTodos(data.sort((a,b) => b.id - a.id))
-        }
-      } catch (e) {
-        console.error(e)
-      }
-    }
-
-    fetchData()
-    console.log('index: ', data)
-  }, [data])
-
-  useEffect(() => {
-    const storeData = async () => {
-      try {
-        const jsonValue = JSON.stringify(todos)
-        await AsyncStorage.setItem("TodoApp", jsonValue)
-      } catch (e) {
-        console.error(e)
-      }
-    }
-
-    storeData()
-    console.log('index: ', todos)
-  }, [todos])
+    fetchLists(setLists)
+  }, [setLists])
 
   if (!loaded && !error) {
     return null
   }
 
   const styles = createStyles(theme, colorScheme)
-
-  const addTodo = () => {
-    if (text.trim()) {
-      const newId = todos.length > 0 ? todos[0].id + 1 : 1;
-      setTodos([{id: newId, title: text, completed: false, starred: false}, ...todos])
-      setText('')
-    }
-  }
 
   const toggleTodo = (id) => {
     setTodos(todos.map(todo => 
@@ -97,6 +60,10 @@ export default function Index() {
     router.push('/todos/add')
   }
 
+  const handleListPress = (id) => {
+    router.push(`/list/${id}`)
+  };
+
   const renderItem = ({ item }) => (
     <View style={[styles.todoItem, item.starred && styles.starred]}>
       <Text
@@ -117,6 +84,14 @@ export default function Index() {
       <Pressable onPress={() => removeTodo(item.id)}>
         <MaterialCommunityIcons name="delete" size={36} color='royalblue' selectable={undefined}/>
       </Pressable>
+    </View>
+  )
+
+  const renderList = ({ item }) => (
+    <View style={styles.todoItem}>
+        <Pressable key={item.id} onPress={() => handleListPress(item.id)}>
+          <Text style={styles.todoText}>{item.title}</Text>
+        </Pressable>
     </View>
   )
 
@@ -145,21 +120,20 @@ export default function Index() {
         </Pressable>
       </View>
       <Animated.FlatList
-        style={styles.starredList}
+        data={lists}
+        renderItem={renderList}
+        keyExtractor={list => list.id}
+        contentContainerStyle={{ flexGrow: 1 }}
+        itemLayoutAnimation={LinearTransition}
+        keyboardDismissMode="on-drag"
+      />
+      <Animated.FlatList
         data={todos.filter(todo => todo.starred === true)}
         renderItem={renderItem}
         keyExtractor={todo => todo.id}
         contentContainerStyle={{ flexGrow: 1 }}
         itemLayoutAnimation={LinearTransition}
         keyboardDismissMode="on-drag" 
-      />
-      <Animated.FlatList
-        data={todos.filter(todo => todo.starred === false)}
-        renderItem={renderItem}
-        keyExtractor={todo => todo.id}
-        contentContainerStyle={{ flexGrow: 1}}
-        itemLayoutAnimation={LinearTransition}
-        keyboardDismissMode="on-drag"
       />
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </SafeAreaView>
@@ -233,6 +207,16 @@ function createStyles(theme, colorScheme) {
     },
     starredList: {
       flexGrow: 0,
-    }
+    },
+    listItem: {
+      padding: 15,
+      marginVertical: 10,
+      backgroundColor: "#f0f0f0",
+      borderRadius: 5,
+    },
+    listTitle: {
+      fontSize: 18,
+      fontWeight: "bold",
+    },
   })
 }
