@@ -21,6 +21,7 @@ export const data = [
 
 export const saveLists = async (lists) => {
   try {
+    console.log("Saving jsonValue:", lists) // Debugging log
     const jsonValue = JSON.stringify(lists)
     await AsyncStorage.setItem("TodoLists", jsonValue)
   } catch (e) {
@@ -32,7 +33,6 @@ export const fetchLists = async (callback) => {
     try {
         const jsonValue = await AsyncStorage.getItem("TodoLists")
         console.log("Fetched jsonValue:", jsonValue) // Debugging log
-        console.log("Default data:", data) // Debugging log
         const lists = jsonValue != null && jsonValue != 'undefined' ? JSON.parse(jsonValue) : [...data]
         console.log("Populated lists:", lists) // Debugging log
         
@@ -50,7 +50,7 @@ export const fetchLists = async (callback) => {
 export const initializeLists = async () => {
     try {
         const jsonValue = await AsyncStorage.getItem("TodoLists")
-        if (jsonValue === null) {
+        if (jsonValue === null || jsonValue === 'undefined') {
             await AsyncStorage.setItem("TodoLists", JSON.stringify(data))
             console.log("Initialized TodoLists with default data.")
         }

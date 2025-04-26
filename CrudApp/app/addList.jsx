@@ -1,23 +1,29 @@
 import { useState } from "react";
-import { View, TextInput, Pressable, StyleSheet } from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
 import { fetchLists, saveLists } from "../data/todos";
 import { useRouter } from "expo-router";
 
 export default function AddListScreen() {
-  const [title, setTitle] = useState("");
-  const router = useRouter();
+  const [title, setTitle] = useState("")
+  const [lists] = useState([])
+  const router = useRouter()
 
   const handleAddList = () => {
     if (title.trim()) {
       fetchLists((lists) => {
-        const newList = { id: Date.now(), title, todos: [] };
-        const updatedLists = [...lists, newList];
-        saveLists(updatedLists);
-        setTitle("");
-        router.push("/"); // Navigate back to the lists screen
-      });
+        const newList = { id: Date.now(), title, todos: [] }
+        const updatedLists = [...lists, newList]
+        saveLists(updatedLists)
+      })
     }
+    setTitle("")
+    router.push("/") // Navigate back to the lists screen
   };
+
+  const cancelAdd = () => {
+    setTitle("")
+    router.push("/")
+  }
 
   return (
     <View style={styles.container}>
@@ -29,6 +35,9 @@ export default function AddListScreen() {
       />
       <Pressable onPress={handleAddList} style={styles.addButton}>
         <Text style={styles.addButtonText}>Add List</Text>
+      </Pressable>
+      <Pressable onPress={cancelAdd} style={styles.addButton}>
+        <Text style={styles.addButtonText}>Cancel</Text>
       </Pressable>
     </View>
   );

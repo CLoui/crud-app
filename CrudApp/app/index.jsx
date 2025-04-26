@@ -1,34 +1,35 @@
-import { Text, View, TextInput, Pressable, StyleSheet, FlatList } from "react-native";
+import { Text, View, Pressable, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState, useContext, useEffect, useCallback } from "react";
+import { useState, useContext, useEffect } from "react";
+import Animated, { LinearTransition } from "react-native-reanimated";
+
+import { StatusBar } from "expo-status-bar";
+import { useRouter } from "expo-router";
+import { fetchLists, saveLists } from "@/data/todos";
+
 import { ThemeContext } from "@/context/ThemeContext";
+import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter";
+import Octicons from '@expo/vector-icons/Octicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 MaterialIcons;
 MaterialCommunityIcons;
 
-import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter";
-import Animated, { LinearTransition } from "react-native-reanimated";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { StatusBar } from "expo-status-bar";
-import { useRouter, useLocalSearchParams } from "expo-router";
-
-import Octicons from '@expo/vector-icons/Octicons';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { data, fetchLists } from "@/data/todos";
 
 export default function Index() {
-  const [todos, setTodos] = useState([])
-  const [lists, setLists] = useState([])
-  const [text, setText] = useState('')
+  const [ lists, setLists ] = useState([])
   const { colorScheme, setColorScheme, theme } = useContext(ThemeContext)
-  const [loaded, error] = useFonts({ Inter_500Medium })
+  const [ loaded, error ] = useFonts({ Inter_500Medium })
   const router = useRouter()
 
   useEffect(() => {
     fetchLists(setLists)
   }, [setLists])
+
+  // useEffect(() => {
+  //   saveLists(setLists)
+  // }, [setLists])
 
   if (!loaded && !error) {
     return null
@@ -36,61 +37,33 @@ export default function Index() {
 
   const styles = createStyles(theme, colorScheme)
 
-  const toggleTodo = (id) => {
-    setTodos(todos.map(todo => 
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
-    ))
-  }
-
-  const toggleStar = (id) => {
-    setTodos(todos.map(todo => 
-      todo.id === id ? { ...todo, starred: !todo.starred } : todo
-    ))
-  }
-
-  const removeTodo = (id) => {
-    setTodos(todos.filter(todo => todo.id !== id))
-  }
-
-  const handleEditPress = (id) => {
-    router.push(`/todos/${id}`)
+  const handleListPress = (id) => {
+    router.push(`/list/${id}`)
   }
 
   const handleAddPress = () => {
-    router.push('/todos/add')
+    router.push('/addList')
   }
 
-  const handleListPress = (id) => {
-    router.push(`/list/${id}`)
-  };
+  const handleEditPress = (id) => {
+    router.push({pathname: '/list/edit', params: { id: id }})
+  }
 
-  const renderItem = ({ item }) => (
-    <View style={[styles.todoItem, item.starred && styles.starred]}>
-      <Text
-        style={[styles.todoText, item.completed && styles.completedText]}
-        onPress={() => toggleTodo(item.id)}
-      >
-        {item.title}
-      </Text>
-      <Pressable onPress={() => toggleStar(item.id)}>
-        {item.starred
-          ? <AntDesign name="star" size={36} color='royalblue'/>
-          : <AntDesign name="staro" size={36} color='royalblue'/>
-        } 
-      </Pressable>
-      <Pressable onPress={() => handleEditPress(item.id)}>
-        <MaterialIcons name="mode-edit" size={36} color='royalblue' selectable={undefined} />
-      </Pressable>
-      <Pressable onPress={() => removeTodo(item.id)}>
-        <MaterialCommunityIcons name="delete" size={36} color='royalblue' selectable={undefined}/>
-      </Pressable>
-    </View>
-  )
+  const removeList = (id) => {
+    setLists(lists.filter(list => list.id !== id))
+    saveLists(lists.filter(list => list.id !== id))
+  }
 
   const renderList = ({ item }) => (
     <View style={styles.todoItem}>
         <Pressable key={item.id} onPress={() => handleListPress(item.id)}>
           <Text style={styles.todoText}>{item.title}</Text>
+        </Pressable>
+        <Pressable onPress={() => handleEditPress(item.id)}>
+          <MaterialIcons name="mode-edit" size={36} color='royalblue' selectable={undefined} />
+        </Pressable>
+        <Pressable onPress={() => removeList(item.id)}>
+          <MaterialCommunityIcons name="delete" size={36} color='royalblue' selectable={undefined}/>
         </Pressable>
     </View>
   )
@@ -98,6 +71,7 @@ export default function Index() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.inputContainer}>
+        <Text style={styles.title}>My Lists</Text>
         <Pressable onPress={() => handleAddPress()}>
           <Ionicons name="add-circle" size={44} color="royalblue" />
         </Pressable>
@@ -126,14 +100,6 @@ export default function Index() {
         contentContainerStyle={{ flexGrow: 1 }}
         itemLayoutAnimation={LinearTransition}
         keyboardDismissMode="on-drag"
-      />
-      <Animated.FlatList
-        data={todos.filter(todo => todo.starred === true)}
-        renderItem={renderItem}
-        keyExtractor={todo => todo.id}
-        contentContainerStyle={{ flexGrow: 1 }}
-        itemLayoutAnimation={LinearTransition}
-        keyboardDismissMode="on-drag" 
       />
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </SafeAreaView>
@@ -190,6 +156,12 @@ function createStyles(theme, colorScheme) {
       maxWidth: 1024,
       marginHorizontal: 'auto',
       pointerEvents: 'auto',
+    },
+    title: {
+      flex: 1,
+      fontSize: 28,
+      fontFamily: 'Inter_500Medium',
+      color: theme.text,
     },
     todoText: {
       flex: 1,

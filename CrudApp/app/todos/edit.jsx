@@ -1,20 +1,20 @@
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { View, Text, StyleSheet, Pressable, TextInput, Modal } from 'react-native';
+
 import { useState, useEffect, useContext } from 'react'
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-
 import { ThemeContext } from "@/context/ThemeContext";
+import { StatusBar } from "expo-status-bar";
 import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { data, fetchLists, saveLists } from "../../data/todos";
 
-export default function AddScreen() {
-    const { id } = useLocalSearchParams() // Get the listId from the route
-    const [text, setText] = useState('')
+export default function EditScreen() {
+    const { id, taskId } = useLocalSearchParams()
+    const [todo, setTodo] = useState({})
     const [todos, setTodos] = useState([])
     const [ lists, setLists ] = useState([])
-    const { colorScheme, theme } = useContext(ThemeContext)
+    const { colorScheme, setColorScheme, theme } = useContext(ThemeContext)
     const router = useRouter()
     const [loaded, error] = useFonts({ Inter_500Medium })
     const [isModalVisible, setModalVisible] = useState(true); 
@@ -23,9 +23,10 @@ export default function AddScreen() {
         fetchLists((lists) => {
             const list = lists.find((list) => list.id === parseInt(id))
             setLists(lists)
-            setTodos(list ? list.todos : [])
-            // console.log('add todos: ', todos)
-        })   
+            setTodos(list)
+            const task = list.todos.find((todo) => todo.id === parseInt(taskId))
+            setTodo(task)
+        })
     }, [id])
 
     if (!loaded && !error) {
@@ -34,24 +35,31 @@ export default function AddScreen() {
 
     const styles = createStyles(theme, colorScheme)
 
-    const cancelEdit = () => {
-        setText('')
-        setModalVisible(false);
+    const handleSave = async () => {
+        const list = lists.find((list) => list.id === parseInt(id))
+        const task = list.todos.find((todo) => todo.id === parseInt(taskId))
+        const savedTodo = { ...task, title: todo.title }
+        
+        if (list.todos) {
+            const otherTasks = list.todos.filter(task => task.id !== parseInt(savedTodo.id))
+            const updatedTodos = [...otherTasks, savedTodo]
+            setTodos(updatedTodos)
+            list.todos = (updatedTodos)
+            const updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))]
+            saveLists(updatedLists)
+        } else {
+            const updatedTodos = [savedTodo]
+            setTodos(updatedTodos)
+            list.todos = (updatedTodos)
+            const updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))]
+            saveLists(updatedLists)
+        }
+
+        setModalVisible(false)
         router.push(`/list/${id}`)
     }
 
-    const addTodo = () => {
-        const newTodo = { id: Date.now(), title: text, completed: false, starred: false }
-        const updatedTodos = [newTodo, ...todos]
-
-        setTodos(updatedTodos)
-        const list = lists.find(list => list.id === parseInt(id))
-        list.todos = (updatedTodos)
-        console.log('Updated Todos: ', list)
-        updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))]
-        saveLists(updatedLists)
-        
-        setText('')
+    const cancelEdit = () => {
         setModalVisible(false)
         router.push(`/list/${id}`)
     }
@@ -66,27 +74,27 @@ export default function AddScreen() {
             >
                 <View style={[styles.inputContainer, {flexDirection: 'column', justifyContent: "center", flex: 1,}]}>
                     <View>
-                    <TextInput 
-                        style={styles.input}
-                        maxLength={30}
-                        placeholder="Add a new todo"
-                        placeholderTextColor="gray"
-                        value={text}
-                        onChangeText={setText}
-                    />
+                        <TextInput 
+                            style={styles.input}
+                            maxLength={30}
+                            placeholder={todo?.title || 'Edit task'}
+                            placeholderTextColor="gray"
+                            value={todo?.title || ''}
+                            onChangeText={(text) => setTodo(prev => ({ ...prev, title: text }))}
+                        />
                     </View>
                     <View style={{flexDirection: 'row'}}>
-                        <Pressable 
-                            onPress={addTodo} 
-                            style={styles.addButton}
+                        <Pressable
+                            style={styles.saveButton}
+                            onPress={handleSave}
                         >
-                            <Text style={styles.buttonText}>Add</Text>
+                            <Text style={styles.saveButtonText}>Save</Text>
                         </Pressable>
                         <Pressable
-                            style={styles.cancelButton}
+                            style={[styles.saveButton, { backgroundColor: 'red' }]}
                             onPress={() => cancelEdit()}
                         >
-                            <Text style={[styles.buttonText, { color: 'white' }]}>Cancel</Text>
+                            <Text style={[styles.saveButtonText, { color: 'white' }]}>Cancel</Text>
                         </Pressable>
                     </View>
                 </View>
@@ -139,19 +147,13 @@ function createStyles(theme, colorScheme) {
             minWidth: 0,
             color: theme.text,
         },
-        addButton: {
+        saveButton: {
             backgroundColor: theme.button,
             borderRadius: 5,
             padding: 10,
             margin: 10,
         },
-        cancelButton: {
-            backgroundColor: 'red',
-            borderRadius: 5,
-            padding: 10,
-            margin: 10,
-        },
-        buttonText: {
+        saveButtonText: {
             fontSize: 18,
             color: colorScheme === 'dark' ? 'black' : 'white',
         },
