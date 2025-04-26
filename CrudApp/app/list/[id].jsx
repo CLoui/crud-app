@@ -59,6 +59,10 @@ export default function TodosScreen() {
         saveLists(updatedLists)
     }
         
+    const editTitle = () => {
+        router.push({pathname: '/list/edit', params: { id: id, prev: `/list/${id}` }})
+    }
+
     const removeTodo = (taskId) => {
         const newTasks = tasks.todos.filter(todo => todo.id !== taskId)
         const newList = {...tasks, todos: newTasks}
@@ -112,7 +116,7 @@ export default function TodosScreen() {
                     <Ionicons name="arrow-back-circle" size={44} color="royalblue" />
                 </Pressable>
                 <Text style={styles.title}>{tasks.title}</Text>
-                <Pressable style={{marginTop: 5, marginLeft: 10}}>
+                <Pressable onPress={() => editTitle()} style={{marginTop: 8, marginLeft: 10}}>
                     <MaterialIcons name="mode-edit" size={30} color={theme.text} selectable={undefined} />
                 </Pressable>
             </View>
@@ -226,12 +230,12 @@ function createStyles(theme, colorScheme) {
             flexGrow: 0,
         },
         title: {
-            flex: 1,
+            // flex: 1,
             fontSize: 28,
             fontFamily: 'Inter_500Medium',
             color: theme.text,
             flexGrow: 0,
-            marginTop: 5,
+            marginTop: 8,
         },
     });
 }

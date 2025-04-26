@@ -10,7 +10,7 @@ import { fetchLists, saveLists } from "@/data/todos";
 
 
 export default function EditListScreen() {
-    const { id } = useLocalSearchParams()
+    const { id, prev } = useLocalSearchParams()
     const [ list, setList ] = useState([])
     const { colorScheme, theme } = useContext(ThemeContext)
     const router = useRouter()
@@ -47,7 +47,7 @@ export default function EditListScreen() {
             }
 
             setModalVisible(false); // Close the modal
-            router.push('/')
+            router.push(prev)
         } catch (e) {
             console.error(e)
         }
@@ -55,7 +55,7 @@ export default function EditListScreen() {
 
     const cancelEdit = () => {
         setModalVisible(false);
-        router.push('/')
+        router.push(prev)
     }
 
     return (

@@ -30,6 +30,7 @@ export default function AddListScreen() {
       <TextInput
         style={styles.input}
         placeholder="List Title"
+        maxLength={30}
         value={title}
         onChangeText={setTitle}
       />

@@ -46,7 +46,7 @@ export default function Index() {
   }
 
   const handleEditPress = (id) => {
-    router.push({pathname: '/list/edit', params: { id: id }})
+    router.push({pathname: '/list/edit', params: { id: id, prev: '/' }})
   }
 
   const removeList = (id) => {
