@@ -1,20 +1,19 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { View, Text, StyleSheet, Pressable, TextInput, Modal } from 'react-native';
+import { useLocalSearchParams, useRouter } from "expo-router"
+import { View, Text, StyleSheet, Pressable, TextInput, Modal } from 'react-native'
 
 import { useState, useEffect, useContext } from 'react'
-import { SafeAreaView } from "react-native-safe-area-context";
-import { ThemeContext } from "@/context/ThemeContext";
-import { StatusBar } from "expo-status-bar";
-import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { data, fetchLists, saveLists } from "../../data/todos";
+import { SafeAreaView } from "react-native-safe-area-context"
+import { ThemeContext } from "@/context/ThemeContext"
+import { StatusBar } from "expo-status-bar"
+import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter"
+import { fetchLists, saveLists } from "../../data/todos"
 
 export default function EditScreen() {
     const { id, taskId } = useLocalSearchParams()
     const [todo, setTodo] = useState({})
     const [todos, setTodos] = useState([])
     const [ lists, setLists ] = useState([])
-    const { colorScheme, setColorScheme, theme } = useContext(ThemeContext)
+    const { colorScheme, theme } = useContext(ThemeContext)
     const router = useRouter()
     const [loaded, error] = useFonts({ Inter_500Medium })
     const [isModalVisible, setModalVisible] = useState(true); 
@@ -45,12 +44,14 @@ export default function EditScreen() {
             const updatedTodos = [...otherTasks, savedTodo]
             setTodos(updatedTodos)
             list.todos = (updatedTodos)
+            list.lastEdited = new Date().toISOString() 
             const updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))]
             saveLists(updatedLists)
         } else {
             const updatedTodos = [savedTodo]
             setTodos(updatedTodos)
             list.todos = (updatedTodos)
+            list.lastEdited = new Date().toISOString() 
             const updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))]
             saveLists(updatedLists)
         }

@@ -1,13 +1,12 @@
-import { View, Text, StyleSheet, Pressable, TextInput, Modal } from 'react-native';
+import { View, Text, StyleSheet, Pressable, TextInput, Modal } from 'react-native'
 import { useState, useEffect, useContext } from 'react'
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native-safe-area-context"
+import { useLocalSearchParams, useRouter } from "expo-router"
+import { StatusBar } from "expo-status-bar"
 
-import { ThemeContext } from "@/context/ThemeContext";
-import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { data, fetchLists, saveLists } from "../../data/todos";
+import { ThemeContext } from "@/context/ThemeContext"
+import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter"
+import { fetchLists, saveLists } from "../../data/todos"
 
 export default function AddScreen() {
     const { id } = useLocalSearchParams() // Get the listId from the route
@@ -41,12 +40,17 @@ export default function AddScreen() {
     }
 
     const addTodo = () => {
-        const newTodo = { id: Date.now(), title: text, completed: false, starred: false }
+        const newTodo = { 
+            id: Date.now(), 
+            title: text, 
+            completed: false, 
+            starred: false }
         const updatedTodos = [newTodo, ...todos]
 
         setTodos(updatedTodos)
         const list = lists.find(list => list.id === parseInt(id))
         list.todos = (updatedTodos)
+        list.lastEdited = new Date().toISOString() 
         console.log('Updated Todos: ', list)
         updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))]
         saveLists(updatedLists)
@@ -66,14 +70,14 @@ export default function AddScreen() {
             >
                 <View style={[styles.inputContainer, {flexDirection: 'column', justifyContent: "center", flex: 1,}]}>
                     <View>
-                    <TextInput 
-                        style={styles.input}
-                        maxLength={30}
-                        placeholder="Add a new todo"
-                        placeholderTextColor="gray"
-                        value={text}
-                        onChangeText={setText}
-                    />
+                        <TextInput 
+                            style={styles.input}
+                            maxLength={30}
+                            placeholder="Add a new todo"
+                            placeholderTextColor="gray"
+                            value={text}
+                            onChangeText={setText}
+                        />
                     </View>
                     <View style={{flexDirection: 'row'}}>
                         <Pressable 
