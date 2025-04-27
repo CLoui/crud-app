@@ -1,5 +1,5 @@
-import { useState, useContext } from "react"
-import { View, Text, TextInput, Pressable, StyleSheet, Modal, FlatList } from "react-native"
+import { useState, useContext, useEffect } from "react"
+import { View, Text, TextInput, Pressable, StyleSheet, Modal, FlatList, Keyboard } from "react-native"
 import { fetchLists, saveLists } from "../data/todos"
 import { useRouter } from "expo-router"
 import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter"
@@ -49,6 +49,20 @@ export default function AddListScreen() {
     setModalVisible(false)
     router.push("/") // Navigate back to the lists screen
   };
+
+  // useEffect(() => {
+  //   const handleKeyPress = (e) => {
+  //     if (e.key === "Enter") {
+  //       handleAddList() // Trigger the Edit button
+  //     }
+  //   }
+
+  //   document.addEventListener("keydown", handleKeyPress)
+
+  //   return () => {
+  //     document.removeEventListener("keydown", handleKeyPress) // Clean up the listener
+  //   }
+  // }, [title])
 
   const cancelAdd = () => {
     setTitle("")

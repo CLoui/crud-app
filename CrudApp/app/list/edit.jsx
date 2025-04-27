@@ -21,10 +21,10 @@ export default function EditListScreen() {
     const [colourId, setColourId] = useState(0)
 
     const colours = [
-        { id: 1, darkColour: 'darkred', lightColour: 'lightcoral' },
-        { id: 2, darkColour: 'darkgreen' , lightColour: 'lightgreen' },
-        { id: 3, darkColour: 'darkblue' , lightColour: 'lightblue' },
-        { id: 4, darkColour: 'rebeccapurple', lightColour: 'plum' },
+        { id: '1', darkColour: 'darkred', lightColour: 'lightcoral' },
+        { id: '2', darkColour: 'darkgreen' , lightColour: 'lightgreen' },
+        { id: '3', darkColour: 'darkblue' , lightColour: 'lightblue' },
+        { id: '4', darkColour: 'rebeccapurple', lightColour: 'plum' },
     ]
 
     useEffect(() => {
@@ -76,6 +76,7 @@ export default function EditListScreen() {
     }
 
     const renderColourButton = ({item}) => {
+        console.log('colourId: ', colourId, ' ,item.colourId: ', item.id)
         return (
           <Pressable 
             onPress={() => selectColour(item.id, item.darkColour, item.lightColour)}
@@ -83,7 +84,7 @@ export default function EditListScreen() {
               styles.colourButton,
               {
                 backgroundColor: theme === 'light' ? item.darkColour : item.lightColour,
-                borderWidth: colourId === item.id ? 4 : 1,
+                borderWidth: colourId === item.id.toString() ? 4 : 1,
                 borderColor: theme.text,
               },
             ]}
@@ -119,13 +120,12 @@ export default function EditListScreen() {
                         />
                     </View>
                     <View style={styles.colourpicker}>
-                        <Text style={[styles.title, {fontSize: 18, marginTop: 10}]}>Pick Colour: </Text>
+                        <Text style={[styles.title, {fontSize: 18}]}>Pick Colour: </Text>
                         <FlatList
                             data={colours}
                             renderItem={renderColourButton}
                             keyExtractor={(item) => item.id.toString()}
                             horizontal
-                            contentContainerStyle={{ marginTop: 10 }}
                         />
                         </View>
                     <View style={{flexDirection: 'row'}}>
@@ -181,13 +181,14 @@ function createStyles(theme, colorScheme) {
             elevation: 5,
         },
         colourpicker: {
-            flexDirection: 'row'
+            flexDirection: 'row',
+            marginTop: 10,
         },  
         colourButton: {
             borderRadius: 5,
             width: 30, 
             height: 30,
-            margin: 10
+            margin: 10,
         },
         input: {
             flex: 1,

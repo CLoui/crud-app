@@ -145,7 +145,9 @@ export default function TodosScreen() {
                 </View>
             </View>
             <View style={styles.navAndTitle}>
-                <Text style={styles.title}>
+                <Text style={[
+                    styles.title, 
+                    {color: colorScheme === 'light' ? tasks.darkcolour : tasks.lightcolour}]}>
                     {tasks.title}
                 </Text>
                 <Pressable onPress={() => editTitle()} style={{marginTop: 15, marginLeft: 10}}>
@@ -258,6 +260,7 @@ function createStyles(theme, colorScheme) {
         title: {
             flex: 1,
             fontSize: 36,
+            fontWeight: 'bold',
             fontFamily: 'Inter_500Medium',
             color: theme.text,
             flexGrow: 0,

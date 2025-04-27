@@ -177,6 +177,7 @@ function createStyles(theme, colorScheme) {
     title: {
       flex: 1,
       fontSize: 36,
+      fontWeight: 'bold',
       fontFamily: 'Inter_500Medium',
       color: theme.text,
     },
