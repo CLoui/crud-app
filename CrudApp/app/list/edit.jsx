@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { ThemeContext } from "@/context/ThemeContext"
 import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter"
 import { fetchLists } from "@/data/todos"
+import { updateList } from '@/storage'
 
 
 export default function EditListScreen() {
@@ -23,7 +24,7 @@ export default function EditListScreen() {
     const colours = [
         { id: '1', darkColour: 'darkred', lightColour: 'lightcoral' },
         { id: '2', darkColour: 'darkgreen' , lightColour: 'lightgreen' },
-        { id: '3', darkColour: 'darkblue' , lightColour: 'lightblue' },
+        { id: '3', darkColour: 'darkblue' , lightColour: 'lightskyblue' },
         { id: '4', darkColour: 'rebeccapurple', lightColour: 'plum' },
     ]
 
@@ -43,31 +44,19 @@ export default function EditListScreen() {
     const styles = createStyles(theme, colorScheme)
 
     const handleSave = async () => {
-        try {
-            const savedList = { 
-                ...list, 
-                title: list.title, 
-                colourId: colourId,
-                darkcolour: darkColour,
-                lightcolour: lightColour,
-                lastEdited: new Date().toISOString() }
-
-            const jsonValue = await AsyncStorage.getItem('TodoLists')
-            const storageLists = jsonValue != null && jsonValue != 'undefined' ? JSON.parse(jsonValue) : null
-            
-            if (storageLists && storageLists.length) {
-                const otherLists = storageLists.filter(list => list.id !== savedList.id)
-                const allLists = [...otherLists, savedList]
-                await AsyncStorage.setItem('TodoLists', JSON.stringify(allLists))
-            } else {
-                await AsyncStorage.setItem('TodoLists', JSON.stringify([savedList]))
-            }
-
-            setModalVisible(false)
-            router.push(prev)
-        } catch (e) {
-            console.error(e)
+        const savedList = { 
+            ...list, 
+            title: list.title, 
+            colourId: colourId,
+            darkcolour: darkColour,
+            lightcolour: lightColour,
+            lastEdited: new Date().toISOString() 
         }
+
+        await updateList(savedList)
+        setModalVisible(false)
+        router.push(prev)
+        
     }
 
     const cancelEdit = () => {

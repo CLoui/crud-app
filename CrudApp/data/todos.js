@@ -4,7 +4,10 @@ export const data = [
     {
         id: 1,
         title: "Personal",
-        colour: "red",
+        colourId: "1",
+        darkcolour: "darkred",
+        lightcolour: "lightcoral",
+        lastEdited: "2025-01-04 10:34:23",
         todos: [
             { id: 1, title: "Finish book", completed: true, starred: false },
             { id: 2, title: "Buy groceries", completed: false, starred: false },
@@ -13,7 +16,10 @@ export const data = [
     {
         id: 2,
         title: "Work",
-        colour: "green",
+        colourId: "1",
+        darkcolour: "darkred",
+        lightcolour: "lightcoral",
+        lastEdited: "2025-01-04 10:34:23",
         todos: [
             { id: 1, title: "Prepare presentation", completed: false, starred: true },
             { id: 2, title: "Send emails", completed: false, starred: false },

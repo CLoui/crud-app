@@ -4,6 +4,7 @@ import { fetchLists, saveLists } from "../../data/todos"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { ThemeContext } from "@/context/ThemeContext"
+import { getTodosByListId, getListsWithTodos, deleteTodo } from '@/storage'
 
 import Octicons from '@expo/vector-icons/Octicons'
 import AntDesign from '@expo/vector-icons/AntDesign'
@@ -27,11 +28,14 @@ export default function TodosScreen() {
     const router = useRouter()
     
     useEffect(() => {
-        fetchLists((lists) => {
-            const list = lists.find((list) => list.id === parseInt(id))
-            setLists(lists)
-            setTasks(list)
-        })
+        // getTodosByListId(parseInt(id), setLists)
+        getListsWithTodos((lists) => {
+            const list = lists.find((list) => list.id === parseInt(id));
+            if (list) {
+                setTasks(list.todos || []); // Set the todos for the list
+                setLists(list); // Set the list details
+            }
+        });
     }, [id])
 
     if (!loaded && !error) {
@@ -41,12 +45,12 @@ export default function TodosScreen() {
     const styles = createStyles(theme, colorScheme)
     
     // Filtered tasks based on the search query
-    const filteredTasks = tasks.todos.filter((task) =>
+    const filteredTasks = tasks.filter((task) =>
         task.title.toLowerCase().includes(searchQuery.toLowerCase())
     )
 
     const toggleTodo = (taskId) => {
-        const newTasks = tasks.todos.map(todo => 
+        const newTasks = tasks.map(todo => 
             todo.id === parseInt(taskId) ? { ...todo, completed: !todo.completed } : todo
         )
         const newList = {...tasks, todos: newTasks, lastEdited: new Date().toISOString()}
@@ -56,7 +60,7 @@ export default function TodosScreen() {
     }
     
     const toggleStar = (taskId) => {
-        const newTasks = tasks.todos.map(todo => 
+        const newTasks = tasks.map(todo => 
             todo.id === parseInt(taskId) ? { ...todo, starred: !todo.starred } : todo
         )
         const newList = {...tasks, todos: newTasks, lastEdited: new Date().toISOString()}
@@ -65,14 +69,9 @@ export default function TodosScreen() {
         saveLists(updatedLists)
     }
         
-    const removeTodo = (taskId) => {
-        const newTasks = tasks.todos.filter(todo => todo.id !== taskId)
-        const newList = {...tasks, todos: newTasks}
-        setTasks(newList)
-        const list = lists.find(list => list.id === parseInt(id))
-        list.todos = (tasks.todos.filter(todo => todo.id !== taskId))
-        const updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))]
-        saveLists(updatedLists)
+    const removeTodo = async (taskId) => {
+        await deleteTodo(taskId); // Remove the task from the database
+        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId)); // Update the UI
     }
     
     const editTitle = () => {
@@ -83,8 +82,8 @@ export default function TodosScreen() {
         router.push({pathname: '/todos/add', params: { id: id }})
     }
 
-    const handleEditPress = (taskId) => {
-        router.push({pathname: '/todos/edit', params: { id: id, taskId: taskId }})
+    const handleEditPress = (task) => {
+        router.push({pathname: '/todos/edit', params: { id: id, task }})
     }
 
     const handleReturn = () => {
@@ -105,7 +104,7 @@ export default function TodosScreen() {
                 : <AntDesign name="staro" size={36} color='royalblue'/>
                 }
             </Pressable>
-            <Pressable onPress={() => handleEditPress(item.id)}>
+            <Pressable onPress={() => handleEditPress(item)}>
                 <MaterialIcons name="mode-edit" size={36} color='royalblue' selectable={undefined} />
             </Pressable>
             <Pressable onPress={() => removeTodo(item.id)}>
@@ -147,10 +146,11 @@ export default function TodosScreen() {
             <View style={styles.navAndTitle}>
                 <Text style={[
                     styles.title, 
-                    {color: colorScheme === 'light' ? tasks.darkcolour : tasks.lightcolour}]}>
-                    {tasks.title}
+                    { color: colorScheme === 'light' ? lists.darkColour : lists.lightColour }
+                ]}>
+                    {lists.title} {/* Display the list title */}
                 </Text>
-                <Pressable onPress={() => editTitle()} style={{marginTop: 15, marginLeft: 10}}>
+                <Pressable onPress={() => editTitle()} style={{ marginTop: 15, marginLeft: 10 }}>
                     <MaterialIcons name="mode-edit" size={30} color={theme.text} selectable={undefined} />
                 </Pressable>
             </View>

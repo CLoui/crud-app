@@ -2,6 +2,7 @@ import { Text, View, Pressable, StyleSheet, TextInput } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useState, useContext, useEffect } from "react"
 import Animated, { LinearTransition } from "react-native-reanimated"
+import { getLists } from '@/storage'
 
 import { StatusBar } from "expo-status-bar"
 import { useRouter } from "expo-router"
@@ -23,7 +24,7 @@ export default function Index() {
   const router = useRouter()
 
   useEffect(() => {
-    fetchLists(setLists)
+    getLists(setLists)
   }, [setLists])
 
   if (!loaded && !error) {

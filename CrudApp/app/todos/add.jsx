@@ -3,6 +3,7 @@ import { useState, useEffect, useContext } from 'react'
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { StatusBar } from "expo-status-bar"
+import { addTodo } from '@/storage'
 
 import { ThemeContext } from "@/context/ThemeContext"
 import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter"
@@ -39,22 +40,17 @@ export default function AddScreen() {
         router.push(`/list/${id}`)
     }
 
-    const addTodo = () => {
+    const handleAddTodo = async () => {
         const newTodo = { 
             id: Date.now(), 
             title: text, 
             completed: false, 
-            starred: false }
+            starred: false,
+            listId: parseInt(id), 
+        }
         const updatedTodos = [newTodo, ...todos]
 
-        setTodos(updatedTodos)
-        const list = lists.find(list => list.id === parseInt(id))
-        list.todos = (updatedTodos)
-        list.lastEdited = new Date().toISOString() 
-        console.log('Updated Todos: ', list)
-        updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))]
-        saveLists(updatedLists)
-        
+        await addTodo(newTodo)
         setText('')
         setModalVisible(false)
         router.push(`/list/${id}`)
@@ -81,7 +77,7 @@ export default function AddScreen() {
                     </View>
                     <View style={{flexDirection: 'row'}}>
                         <Pressable 
-                            onPress={addTodo} 
+                            onPress={handleAddTodo} 
                             style={styles.addButton}
                         >
                             <Text style={styles.buttonText}>Add</Text>

@@ -5,6 +5,7 @@ import { useRouter } from "expo-router"
 import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter"
 import { ThemeContext } from "@/context/ThemeContext"
 import { SafeAreaView } from "react-native-safe-area-context"
+import { addList } from '@/storage';
 
 export default function AddListScreen() {
   const [title, setTitle] = useState("")
@@ -19,7 +20,7 @@ export default function AddListScreen() {
   const colours = [
     { id: 1, darkColour: 'darkred', lightColour: 'lightcoral' },
     { id: 2, darkColour: 'darkgreen' , lightColour: 'lightgreen' },
-    { id: 3, darkColour: 'darkblue' , lightColour: 'lightblue' },
+    { id: 3, darkColour: 'darkblue' , lightColour: 'lightskyblue' },
     { id: 4, darkColour: 'rebeccapurple', lightColour: 'plum' },
   ]
 
@@ -29,25 +30,25 @@ export default function AddListScreen() {
 
   const styles = createStyles(theme, colorScheme)
 
-  const handleAddList = () => {
+  const handleAddList = async () => {
     if (title.trim()) {
-      fetchLists((lists) => {
-        const newList = { 
-          id: Date.now(), 
-          title, 
-          colourId: colourId,
-          darkcolour: darkColour, 
-          lightcolour: lightColour, 
-          todos: [],
-          lastEdited: new Date().toISOString() 
-        }
-        const updatedLists = [...lists, newList]
-        saveLists(updatedLists)
-      })
+      const newList = { 
+        id: Date.now(), 
+        title, 
+        colourId: colourId,
+        darkcolour: darkColour, 
+        lightcolour: lightColour, 
+        todos: [],
+        lastEdited: new Date().toISOString() 
+      }
+      // const updatedLists = [...lists, newList]
+      // saveLists(updatedLists)
+
+      await addList(newList)
+      setTitle("")
+      setModalVisible(false)
+      router.push("/") // Navigate back to the lists screen
     }
-    setTitle("")
-    setModalVisible(false)
-    router.push("/") // Navigate back to the lists screen
   };
 
   // useEffect(() => {
