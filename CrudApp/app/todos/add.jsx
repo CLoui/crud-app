@@ -1,63 +1,71 @@
-import { View, Text, StyleSheet, Pressable, TextInput, Modal } from 'react-native'
-import { useState, useEffect, useContext } from 'react'
-import { SafeAreaView } from "react-native-safe-area-context"
-import { useLocalSearchParams, useRouter } from "expo-router"
-import { StatusBar } from "expo-status-bar"
+import { View, Text, StyleSheet, Pressable, TextInput, Modal } from 'react-native';
+import { useState, useEffect, useContext } from 'react';
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { ThemeContext } from "@/context/ThemeContext";
+import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter";
+import { fetchLists, saveLists } from "../../data/todos";
 
-import { ThemeContext } from "@/context/ThemeContext"
-import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter"
-import { fetchLists, saveLists } from "../../data/todos"
 
+// Screen to add new task to a list
 export default function AddScreen() {
-    const { id } = useLocalSearchParams() // Get the listId from the route
-    const [text, setText] = useState('')
-    const [todos, setTodos] = useState([])
-    const [ lists, setLists ] = useState([])
-    const { colorScheme, theme } = useContext(ThemeContext)
-    const router = useRouter()
-    const [loaded, error] = useFonts({ Inter_500Medium })
+    const { id } = useLocalSearchParams(); // Get the listId from the route
+    const [text, setText] = useState('');
+    const [todos, setTodos] = useState([]);
+    const [ lists, setLists ] = useState([]);
+    const { colorScheme, theme } = useContext(ThemeContext);
+    const router = useRouter();
+    const [loaded, error] = useFonts({ Inter_500Medium });
     const [isModalVisible, setModalVisible] = useState(true); 
 
+    // Fetch list from storage
     useEffect(() => {
         fetchLists((lists) => {
-            const list = lists.find((list) => list.id === parseInt(id))
-            setLists(lists)
-            setTodos(list ? list.todos : [])
-        })   
-    }, [id])
+            const list = lists.find((list) => list.id === parseInt(id));
+            setLists(lists);
+            setTodos(list ? list.todos : []);
+        });
+    }, [id]);
 
+    // Check if font has loaded properly
     if (!loaded && !error) {
-        return null
-    }
+        return null;
+    };
 
-    const styles = createStyles(theme, colorScheme)
+    // Create style sheet for this page
+    const styles = createStyles(theme, colorScheme);
 
+    // Cancel edit and return to the list screen
     const cancelEdit = () => {
-        setText('')
+        setText('');
         setModalVisible(false);
-        router.push(`/list/${id}`)
-    }
+        router.push(`/list/${id}`);
+    };
 
+    // Handles adding a new to do task to the list
     const addTodo = () => {
         const newTodo = { 
             id: Date.now(), 
             title: text, 
             completed: false, 
-            starred: false }
-        const updatedTodos = [newTodo, ...todos]
-
-        setTodos(updatedTodos)
-        const list = lists.find(list => list.id === parseInt(id))
-        list.todos = (updatedTodos)
-        list.lastEdited = new Date().toISOString() 
-        console.log('Updated Todos: ', list)
-        updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))]
-        saveLists(updatedLists)
+            starred: false };
+        const updatedTodos = [newTodo, ...todos];
+        setTodos(updatedTodos); // Set the task with the new changes
         
-        setText('')
-        setModalVisible(false)
-        router.push(`/list/${id}`)
-    }
+        // Updates the list to include the altered task
+        const list = lists.find(list => list.id === parseInt(id));
+        list.todos = (updatedTodos); 
+        list.lastEdited = new Date().toISOString() ;
+        
+        // Updates the set of lists to include this list with the altered task
+        updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))];
+        saveLists(updatedLists); 
+        
+        setText('');
+        setModalVisible(false);
+        router.push(`/list/${id}`);
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -69,6 +77,7 @@ export default function AddScreen() {
             >
                 <View style={[styles.inputContainer, {flexDirection: 'column', justifyContent: "center", flex: 1,}]}>
                     <Text style={styles.title}>Add Task</Text>
+                    {/* Text input for task name */}
                     <View>
                         <TextInput 
                             style={styles.input}
@@ -79,6 +88,7 @@ export default function AddScreen() {
                             onChangeText={setText}
                         />
                     </View>
+                    {/* Add and cancel buttons */}
                     <View style={{flexDirection: 'row'}}>
                         <Pressable 
                             onPress={addTodo} 
@@ -97,8 +107,8 @@ export default function AddScreen() {
                 <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
             </Modal>
         </SafeAreaView>   
-    )
-}
+    );
+};
 
 function createStyles(theme, colorScheme) {
     return StyleSheet.create({
@@ -167,5 +177,5 @@ function createStyles(theme, colorScheme) {
             margin: 10,
             marginTop: 10,
         },
-    })
-}
+    });
+};

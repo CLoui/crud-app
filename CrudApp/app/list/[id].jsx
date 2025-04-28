@@ -1,96 +1,107 @@
-import { useEffect, useState, useContext } from "react"
-import { View, Text, StyleSheet, Pressable, TextInput } from "react-native"
-import { fetchLists, saveLists } from "../../data/todos"
-import { useLocalSearchParams, useRouter } from "expo-router"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { ThemeContext } from "@/context/ThemeContext"
+import { useEffect, useState, useContext } from "react";
+import { View, Text, StyleSheet, Pressable, TextInput } from "react-native";
+import { fetchLists, saveLists } from "../../data/todos";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemeContext } from "@/context/ThemeContext";
 
-import Octicons from '@expo/vector-icons/Octicons'
-import AntDesign from '@expo/vector-icons/AntDesign'
-import Ionicons from '@expo/vector-icons/Ionicons'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-MaterialIcons
-MaterialCommunityIcons
+import Octicons from '@expo/vector-icons/Octicons';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter"
-import Animated, { LinearTransition } from "react-native-reanimated"
-import { StatusBar } from "expo-status-bar"
+import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter";
+import Animated, { LinearTransition } from "react-native-reanimated";
+import { StatusBar } from "expo-status-bar";
 
+
+// Screen to display the specific Todo list
 export default function TodosScreen() {
-    const { id } = useLocalSearchParams() // Get the listId from the route
-    const [tasks, setTasks] = useState([])
-    const [lists, setLists] = useState([])
-    const [searchQuery, setSearchQuery] = useState("")
-    const { colorScheme, setColorScheme, theme } = useContext(ThemeContext)
-    const [loaded, error] = useFonts({ Inter_500Medium })
-    const router = useRouter()
+    const { id } = useLocalSearchParams(); // Get the listId from the route
+    const [tasks, setTasks] = useState([]);
+    const [lists, setLists] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const { colorScheme, setColorScheme, theme } = useContext(ThemeContext);
+    const [loaded, error] = useFonts({ Inter_500Medium });
+    const router = useRouter();
     
+    // Fetch the specific list from storage
     useEffect(() => {
         fetchLists((lists) => {
-            const list = lists.find((list) => list.id === parseInt(id))
-            setLists(lists)
-            setTasks(list)
-        })
-    }, [id])
+            const list = lists.find((list) => list.id === parseInt(id));
+            setLists(lists);
+            setTasks(list);
+        });
+    }, [id]);
 
+    // Check that the font has loaded successfully
     if (!loaded && !error) {
-        return null
-    }
+        return null;
+    };
 
-    const styles = createStyles(theme, colorScheme)
+    // Create a style sheet for this screen
+    const styles = createStyles(theme, colorScheme);
     
-    // Filtered tasks based on the search query
+    // Filter tasks based on the search query
     const filteredTasks = tasks.todos.filter((task) =>
         task.title.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    );
 
+    // Allow user to click on task item to cross it out
     const toggleTodo = (taskId) => {
         const newTasks = tasks.todos.map(todo => 
             todo.id === parseInt(taskId) ? { ...todo, completed: !todo.completed } : todo
-        )
-        const newList = {...tasks, todos: newTasks, lastEdited: new Date().toISOString()}
-        setTasks(newList)
-        const updatedLists = [newList, ...lists.filter(list => list.id !== parseInt(id))]
-        saveLists(updatedLists)
-    }
+        );
+        const newList = {...tasks, todos: newTasks, lastEdited: new Date().toISOString()};
+        setTasks(newList);
+        const updatedLists = [newList, ...lists.filter(list => list.id !== parseInt(id))];
+        saveLists(updatedLists);
+    };
     
+    // Allow user to star/pin important tasks on the top of the list
     const toggleStar = (taskId) => {
         const newTasks = tasks.todos.map(todo => 
             todo.id === parseInt(taskId) ? { ...todo, starred: !todo.starred } : todo
-        )
-        const newList = {...tasks, todos: newTasks, lastEdited: new Date().toISOString()}
-        setTasks(newList)
-        const updatedLists = [newList, ...lists.filter(list => list.id !== parseInt(id))]
-        saveLists(updatedLists)
-    }
+        );
+        const newList = {...tasks, todos: newTasks, lastEdited: new Date().toISOString()};
+        setTasks(newList);
+        const updatedLists = [newList, ...lists.filter(list => list.id !== parseInt(id))];
+        saveLists(updatedLists);
+    };
         
+    // Remove a to do task from the list
     const removeTodo = (taskId) => {
-        const newTasks = tasks.todos.filter(todo => todo.id !== taskId)
-        const newList = {...tasks, todos: newTasks}
-        setTasks(newList)
-        const list = lists.find(list => list.id === parseInt(id))
-        list.todos = (tasks.todos.filter(todo => todo.id !== taskId))
-        const updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))]
-        saveLists(updatedLists)
-    }
+        const newTasks = tasks.todos.filter(todo => todo.id !== taskId);
+        const newList = {...tasks, todos: newTasks};
+        setTasks(newList);
+        const list = lists.find(list => list.id === parseInt(id));
+        list.todos = (tasks.todos.filter(todo => todo.id !== taskId));
+        const updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))];
+        saveLists(updatedLists);
+    };
     
+    // Edit the title of the list
     const editTitle = () => {
-        router.push({pathname: '/list/edit', params: { id: id, prev: `/list/${id}` }})
-    }
+        router.push({pathname: '/list/edit', params: { id: id, prev: `/list/${id}` }});
+    };
 
+    // Add new to do task
     const handleAddPress = () => {
-        router.push({pathname: '/todos/add', params: { id: id }})
-    }
+        router.push({pathname: '/todos/add', params: { id: id }});
+    };
 
+    // Edit the text of a specific task
     const handleEditPress = (taskId) => {
-        router.push({pathname: '/todos/edit', params: { id: id, taskId: taskId }})
-    }
+        router.push({pathname: '/todos/edit', params: { id: id, taskId: taskId }});
+    };
 
+    // Return back to the index page
     const handleReturn = () => {
-        router.push('/')
-    }
+        router.push('/');
+    };
   
+    // Render each to do task of this list
     const renderItem = ({ item }) => (
         <View style={[styles.todoItem, item.starred && styles.starred]}>
             <Text
@@ -118,13 +129,16 @@ export default function TodosScreen() {
     <SafeAreaView style={styles.container}>
         <View style={{margin: 12, alignItems: 'center', flex: 1}}>
             <View style={styles.inputContainer}>
+                {/* Return button back to index page */}
                 <Pressable onPress={() => handleReturn()}>
                     <Ionicons name="arrow-back-circle" size={44} color="royalblue" />
                 </Pressable>
                 <View style={styles.addAndTheme}>
+                    {/* Add new task button */}
                     <Pressable onPress={() => handleAddPress()}>
                         <Ionicons name="add-circle" size={44} color="royalblue" />
                     </Pressable>
+                    {/* Toggle the light/dark mode */}
                     <Pressable
                         onPress={() => setColorScheme(colorScheme === 'light' ? 'dark' : 'light')}
                         style={{marginLeft: 10, flexDirection: 'row', borderWidth: 2, borderRadius: 5, borderColor: 'gray'}}
@@ -144,6 +158,7 @@ export default function TodosScreen() {
                     </Pressable>
                 </View>
             </View>
+            {/* Title of list */}
             <View style={styles.navAndTitle}>
                 <Text style={[
                     styles.title, 
@@ -154,6 +169,7 @@ export default function TodosScreen() {
                     <MaterialIcons name="mode-edit" size={30} color={theme.text} selectable={undefined} />
                 </Pressable>
             </View>
+            {/* Searchbar to narrow down list of tasks */}
             <TextInput
                 style={styles.searchBar}
                 placeholder="Search lists..."
@@ -161,6 +177,7 @@ export default function TodosScreen() {
                 value={searchQuery}
                 onChangeText={setSearchQuery}
             />
+            {/* List of tasks, sorted by starred or not starred */}
             <Animated.FlatList
                 style={styles.starredList}
                 data={filteredTasks.filter(todo => todo.starred === true)}
@@ -179,6 +196,7 @@ export default function TodosScreen() {
                 itemLayoutAnimation={LinearTransition}
                 keyboardDismissMode="on-drag"
             />
+            {/* Ensures status bar on mobile stays visible when light/dark theme switches */}
             <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
         </View>
     </SafeAreaView>
@@ -187,7 +205,7 @@ export default function TodosScreen() {
   );
 }
 
-function createStyles(theme, colorScheme) {
+function createStyles(theme) {
     return StyleSheet.create({
         container: {
             flex: 1,
@@ -197,7 +215,6 @@ function createStyles(theme, colorScheme) {
             flexDirection: 'row',
             alignItems: 'center',
             marginBottom: 10,
-            // padding: 10,
             width: '100%',
             maxWidth: 1024,
             marginTop: 50,
@@ -209,7 +226,6 @@ function createStyles(theme, colorScheme) {
             flexDirection: 'row',
             width: '100%',
             maxWidth: 1024,
-            // marginLeft: 10,
         },
         list: {
             width: '100%',
@@ -217,15 +233,6 @@ function createStyles(theme, colorScheme) {
         },
         addAndTheme: {
             flexDirection: 'row',
-        },
-        addButton: {
-            backgroundColor: theme.button,
-            borderRadius: 5,
-            padding: 10,
-        },
-        addButtonText: {
-            fontSize: 18,
-            color: colorScheme === 'dark' ? 'black' : 'white',
         },
         todoItem: {
             flexDirection: 'row',
@@ -283,4 +290,4 @@ function createStyles(theme, colorScheme) {
             backgroundColor: theme.secondary,
         },
     });
-}
+};

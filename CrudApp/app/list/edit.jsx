@@ -1,47 +1,52 @@
-import { View, Text, StyleSheet, Pressable, TextInput, Modal, FlatList } from 'react-native'
-import { useState, useEffect, useContext } from 'react'
-import { useLocalSearchParams, useRouter } from "expo-router"
-import { StatusBar } from "expo-status-bar"
-import AsyncStorage from "@react-native-async-storage/async-storage"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { ThemeContext } from "@/context/ThemeContext"
-import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter"
-import { fetchLists } from "@/data/todos"
+import { View, Text, StyleSheet, Pressable, TextInput, Modal, FlatList } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useState, useEffect, useContext } from 'react';
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter";
+import { ThemeContext } from "@/context/ThemeContext";
+import { fetchLists } from "@/data/todos";
 
 
+// Screen to allow editing details of a specific list
 export default function EditListScreen() {
-    const { id, prev } = useLocalSearchParams()
-    const [ list, setList ] = useState([])
-    const { colorScheme, theme } = useContext(ThemeContext)
-    const router = useRouter()
-    const [loaded, error] = useFonts({ Inter_500Medium })
-    const [isModalVisible, setModalVisible] = useState(true)
-    const [darkColour, setDarkColour] = useState(theme.text)
+    const { id, prev } = useLocalSearchParams();
+    const [ list, setList ] = useState([]);
+    const { colorScheme, theme } = useContext(ThemeContext);
+    const [darkColour, setDarkColour] = useState(theme.text);
     const [lightColour, setightColour] = useState(theme.text)
-    const [colourId, setColourId] = useState(0)
+    const [colourId, setColourId] = useState(0);
+    const [loaded, error] = useFonts({ Inter_500Medium });
+    const [isModalVisible, setModalVisible] = useState(true);;
+    const router = useRouter();
 
+    // Colour values to pick from 
     const colours = [
         { id: '1', darkColour: 'darkred', lightColour: 'lightcoral' },
         { id: '2', darkColour: 'darkgreen' , lightColour: 'lightgreen' },
         { id: '3', darkColour: 'darkblue' , lightColour: 'lightskyblue' },
         { id: '4', darkColour: 'rebeccapurple', lightColour: 'plum' },
-    ]
+    ];
 
+    // Fetch list from storage
     useEffect(() => {
         fetchLists((lists) => {
-            const myList = lists.find(list => list.id.toString() === id)
-            setList(myList)
-            setColourId(myList.colourId)
-            console.log('Fetched list ', id)
-        })
-    }, [setList])
+            const myList = lists.find(list => list.id.toString() === id);
+            setList(myList);
+            setColourId(myList.colourId);
+        });
+    }, [setList]);
     
+    // Check if font has loaded properly
     if (!loaded && !error) {
         return null
-    }
+    };
 
-    const styles = createStyles(theme, colorScheme)
+    // Create style sheet for this page
+    const styles = createStyles(theme, colorScheme);
 
+    // Handles saving the changes made to the list
     const handleSave = async () => {
         try {
             const savedList = { 
@@ -50,33 +55,35 @@ export default function EditListScreen() {
                 colourId: colourId,
                 darkcolour: darkColour,
                 lightcolour: lightColour,
-                lastEdited: new Date().toISOString() }
+                lastEdited: new Date().toISOString() };
 
-            const jsonValue = await AsyncStorage.getItem('TodoLists')
-            const storageLists = jsonValue != null && jsonValue != 'undefined' ? JSON.parse(jsonValue) : null
+            const jsonValue = await AsyncStorage.getItem('TodoLists');
+            const storageLists = jsonValue != null && jsonValue != 'undefined' ? JSON.parse(jsonValue) : null;
             
+            // Check if there are any other lists made
             if (storageLists && storageLists.length) {
-                const otherLists = storageLists.filter(list => list.id !== savedList.id)
-                const allLists = [...otherLists, savedList]
-                await AsyncStorage.setItem('TodoLists', JSON.stringify(allLists))
+                const otherLists = storageLists.filter(list => list.id !== savedList.id);
+                const allLists = [...otherLists, savedList];
+                await AsyncStorage.setItem('TodoLists', JSON.stringify(allLists));
             } else {
-                await AsyncStorage.setItem('TodoLists', JSON.stringify([savedList]))
-            }
+                await AsyncStorage.setItem('TodoLists', JSON.stringify([savedList]));
+            };
 
-            setModalVisible(false)
-            router.push(prev)
+            setModalVisible(false);
+            router.push(prev);
         } catch (e) {
-            console.error(e)
-        }
-    }
+            console.error(e);
+        };
+    };
 
+    // Cancels edit and returns to previous page
     const cancelEdit = () => {
-        setModalVisible(false)
-        router.push(prev)
-    }
+        setModalVisible(false);
+        router.push(prev);
+    };
 
+    // Renders the row of button to select a colour
     const renderColourButton = ({item}) => {
-        console.log('colourId: ', colourId, ' ,item.colourId: ', item.id)
         return (
           <Pressable 
             onPress={() => selectColour(item.id, item.darkColour, item.lightColour)}
@@ -90,14 +97,14 @@ export default function EditListScreen() {
             ]}
           />
         );
-      }
+      };
     
+    // Saves which colour has been selected
     const selectColour = (id, dark, light) => {
-        console.log('select edit colour: ', dark)
-        setColourId(id)
-        setDarkColour(dark)
-        setightColour(light)
-    }
+        setColourId(id);
+        setDarkColour(dark);
+        setightColour(light);
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -109,6 +116,7 @@ export default function EditListScreen() {
             >
                 <View style={[styles.inputContainer, {flexDirection: 'column', justifyContent: "center", flex: 1,}]}>
                     <Text style={styles.title}>Edit List</Text>
+                    {/* Text input to edit list title */}
                     <View>
                         <TextInput 
                             style={styles.input}
@@ -119,6 +127,7 @@ export default function EditListScreen() {
                             onChangeText={(text) => setList(prev => ({ ...prev, title: text }))}
                         />
                     </View>
+                    {/* Row of buttons to pick colour */}
                     <View style={styles.colourpicker}>
                         <Text style={[styles.title, {fontSize: 18}]}>Pick Colour: </Text>
                         <View style={{alignContent: 'flex-end'}}>
@@ -130,6 +139,7 @@ export default function EditListScreen() {
                             />
                         </View>
                     </View>
+                    {/* Save and cancel buttons */}
                     <View style={{flexDirection: 'row'}}>
                         <Pressable
                             style={styles.button}
@@ -149,7 +159,7 @@ export default function EditListScreen() {
             </Modal>
         </SafeAreaView>   
     )
-}
+};
 
 function createStyles(theme, colorScheme) {
     return StyleSheet.create({
@@ -222,5 +232,5 @@ function createStyles(theme, colorScheme) {
             margin: 10,
             marginTop: 10,
         },
-    })
-}
+    });
+};

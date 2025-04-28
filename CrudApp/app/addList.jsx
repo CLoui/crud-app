@@ -1,75 +1,70 @@
-import { useState, useContext, useEffect } from "react"
-import { View, Text, TextInput, Pressable, StyleSheet, Modal, FlatList, Keyboard } from "react-native"
-import { fetchLists, saveLists } from "../data/todos"
-import { useRouter } from "expo-router"
-import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter"
-import { ThemeContext } from "@/context/ThemeContext"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { useState, useContext } from "react";
+import { View, Text, TextInput, Pressable, StyleSheet, Modal, FlatList } from "react-native";
+import { useRouter } from "expo-router";
+import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter";
+import { fetchLists, saveLists } from "../data/todos";
+import { ThemeContext } from "@/context/ThemeContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
+
+// Screen to add new to do list
 export default function AddListScreen() {
-  const [title, setTitle] = useState("")
-  const router = useRouter()
-  const [loaded, error] = useFonts({ Inter_500Medium })
-  const { colorScheme, theme } = useContext(ThemeContext)
-  const [isModalVisible, setModalVisible] = useState(true)
-  const [darkColour, setDarkColour] = useState(theme.text)
-  const [lightColour, setightColour] = useState(theme.text)
-  const [colourId, setColourId] = useState(0)
-
+  const [title, setTitle] = useState("");
+  const [loaded, error] = useFonts({ Inter_500Medium });
+  const { colorScheme, theme } = useContext(ThemeContext);
+  const [darkColour, setDarkColour] = useState(theme.text);
+  const [lightColour, setightColour] = useState(theme.text);
+  const [colourId, setColourId] = useState(0);
+  const [isModalVisible, setModalVisible] = useState(true);
+  const router = useRouter();
+  
+  // Set of colours for user to pick from
   const colours = [
     { id: 1, darkColour: 'darkred', lightColour: 'lightcoral' },
     { id: 2, darkColour: 'darkgreen' , lightColour: 'lightgreen' },
     { id: 3, darkColour: 'darkblue' , lightColour: 'lightblue' },
     { id: 4, darkColour: 'rebeccapurple', lightColour: 'plum' },
-  ]
+  ];
 
+  // Check if font has loaded properly
   if (!loaded && !error) {
-    return null
+    return null;
   }
 
-  const styles = createStyles(theme, colorScheme)
+  // Create style sheet for this specific screen
+  const styles = createStyles(theme, colorScheme);
 
+  // Handle adding new to do list 
   const handleAddList = () => {
     if (title.trim()) {
       fetchLists((lists) => {
         const newList = { 
           id: Date.now(), 
-          title, 
+          title,
           colourId: colourId,
           darkcolour: darkColour, 
           lightcolour: lightColour, 
           todos: [],
           lastEdited: new Date().toISOString() 
-        }
+        };
+        // Add this todo list to list of all todo lists
         const updatedLists = [...lists, newList]
         saveLists(updatedLists)
-      })
-    }
-    setTitle("")
-    setModalVisible(false)
-    router.push("/") // Navigate back to the lists screen
+      });
+    };
+    setTitle("");
+    setModalVisible(false);
+    router.push("/"); // Navigate back to the index screen
   };
 
-  // useEffect(() => {
-  //   const handleKeyPress = (e) => {
-  //     if (e.key === "Enter") {
-  //       handleAddList() // Trigger the Edit button
-  //     }
-  //   }
-
-  //   document.addEventListener("keydown", handleKeyPress)
-
-  //   return () => {
-  //     document.removeEventListener("keydown", handleKeyPress) // Clean up the listener
-  //   }
-  // }, [title])
-
+  // Cancel adding a new list
   const cancelAdd = () => {
-    setTitle("")
-    setModalVisible(false)
-    router.push("/")
-  }
+    setTitle("");
+    setModalVisible(false);
+    router.push("/");
+  };
 
+  // Render row of buttons for user to select colour from
   const renderColourButton = ({item}) => {
     return (
       <Pressable 
@@ -84,13 +79,14 @@ export default function AddListScreen() {
         ]}
       />
     );
-  }
+  };
 
+  // Save colour details when the user picks a colour from colour picker
   const selectColour = (id, dark, light) => {
     setColourId(id)
     setDarkColour(dark)
     setightColour(light)
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -102,6 +98,7 @@ export default function AddListScreen() {
       >
         <View style={[styles.inputContainer, {flexDirection: 'column', justifyContent: "center", flex: 1,}]}>
           <Text style={styles.title}>Add List</Text>
+          {/* Text input for list title */}
           <View>
             <TextInput
             style={styles.input}
@@ -111,6 +108,7 @@ export default function AddListScreen() {
             onChangeText={setTitle}
             />
           </View>
+          {/* Row of buttons to select a colour */}
           <View style={styles.colourpicker}>
             <Text style={[styles.title, {fontSize: 18, marginTop: 10}]}>Pick Colour: </Text>
             <View style={{alignContent: 'flex-end'}}>
@@ -123,6 +121,7 @@ export default function AddListScreen() {
               />
             </View>
           </View>
+          {/* Add list and cancel buttons */}
           <View style={{flexDirection: 'row'}}>
             <Pressable onPress={handleAddList} style={styles.addButton}>
               <Text style={styles.buttonText}>Add List</Text>
@@ -135,7 +134,7 @@ export default function AddListScreen() {
       </Modal>
     </SafeAreaView>  
   );
-}
+};
 
 function createStyles(theme, colorScheme) {
   return StyleSheet.create({
@@ -214,4 +213,4 @@ function createStyles(theme, colorScheme) {
       marginTop: 10,
     },
   });
-}
+};

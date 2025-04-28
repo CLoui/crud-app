@@ -1,3 +1,4 @@
+// Colour values for each colour theme (light, dark)
 export const Colours = {
     light: {
         text: '#11181C',

@@ -49,47 +49,77 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   removeItem: jest.fn(),
 }));
 
-jest.mock('expo-router', () => ({
-  RouterContext: {
-    Provider: ({ children, value }) => <>{children}</>,
-  },
-  useRouter: () => ({
-    push: jest.fn(),
-    back: jest.fn(),
-  }),
-}));
-
 describe('Navigation Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('renders Index Page and finds "My Lists" title', () => {
-    const { getByTestId, getByText, debug } = render(
+    const { getByText } = render(
       <RouterContext.Provider value={mockRouter}>
         <ThemeContext.Provider value={{ theme: mockTheme.light, colorScheme: 'light' }}>
           <Index />
         </ThemeContext.Provider>
       </RouterContext.Provider>
     )
-    debug();
+    
     expect(getByText('My Lists')).toBeTruthy()
-    // const addButton = getByTestId('add-circle');
-    // fireEvent.press(addButton);
-
-    // expect(mockRouter.push).toHaveBeenCalledWith('/todos/add');
   });
 
-  // it('navigates back to the previous page', () => {
-  //   const { getByTestId } = render(
-  //     // <RouterContext.Provider value={mockRouter}>
-  //       <TodosScreen />
-  //     // </RouterContext.Provider>
-  //   );
+  it('renders Index Page and finds "My Lists" title', () => {
+    const { getByText } = render(
+      <RouterContext.Provider value={mockRouter}>
+        <ThemeContext.Provider value={{ theme: mockTheme.light, colorScheme: 'light' }}>
+          <Index />
+        </ThemeContext.Provider>
+      </RouterContext.Provider>
+    )
+    
+    expect(getByText('📝 My Lists')).toBeTruthy()
+  });
 
-  //   const backButton = getByTestId('back-button');
-  //   fireEvent.press(backButton);
+  it('renders Index Page and press Add button to open Add modal', () => {
+    const { getByTestId } = render(
+      <RouterContext.Provider value={mockRouter}>
+        <ThemeContext.Provider value={{ theme: mockTheme.light, colorScheme: 'light' }}>
+          <Index />
+        </ThemeContext.Provider>
+      </RouterContext.Provider>
+    )
+    
+    const addButton = getByTestId('add-circle')
+    fireEvent.press(addButton)
 
-  //   expect(mockRouter.back).toHaveBeenCalled();
-  // });
+    expect(mockRouter.push).toHaveBeenCalledWith('/todos/add')
+  });
+
+  it('navigates back to the search item that exists', () => {
+    const { getByText } = render(
+      <RouterContext.Provider value={mockRouter}>
+        <ThemeContext.Provider value={{ theme: mockTheme.light, colorScheme: 'light' }}>
+          <Index />
+        </ThemeContext.Provider>
+      </RouterContext.Provider>
+    );
+
+    const searchBar = getByText('Search lists...')
+    fireEvent.changeText(searchBar, 'Gr')
+
+    expect(getByText('Groceries')).toBeTruthy()
+  });
+
+  it('navigates back to the search item that does not exists', () => {
+    const { getByText } = render(
+      <RouterContext.Provider value={mockRouter}>
+        <ThemeContext.Provider value={{ theme: mockTheme.light, colorScheme: 'light' }}>
+          <Index />
+        </ThemeContext.Provider>
+      </RouterContext.Provider>
+    );
+
+    const searchBar = getByText('Search lists...')
+    fireEvent.changeText(searchBar, 'abc')
+
+    expect(getByText('Groceries')).toBeTruthy()
+  });
 });

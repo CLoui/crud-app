@@ -1,68 +1,75 @@
-import { useLocalSearchParams, useRouter } from "expo-router"
-import { View, Text, StyleSheet, Pressable, TextInput, Modal } from 'react-native'
+import { View, Text, StyleSheet, Pressable, TextInput, Modal } from 'react-native';
+import { useState, useEffect, useContext } from 'react';
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter";
+import { ThemeContext } from "@/context/ThemeContext";
+import { fetchLists, saveLists } from "../../data/todos";
 
-import { useState, useEffect, useContext } from 'react'
-import { SafeAreaView } from "react-native-safe-area-context"
-import { ThemeContext } from "@/context/ThemeContext"
-import { StatusBar } from "expo-status-bar"
-import { Inter_500Medium, useFonts } from "@expo-google-fonts/inter"
-import { fetchLists, saveLists } from "../../data/todos"
 
+// Screen to edit a specific task
 export default function EditScreen() {
-    const { id, taskId } = useLocalSearchParams()
-    const [todo, setTodo] = useState({})
-    const [todos, setTodos] = useState([])
-    const [ lists, setLists ] = useState([])
-    const { colorScheme, theme } = useContext(ThemeContext)
-    const router = useRouter()
-    const [loaded, error] = useFonts({ Inter_500Medium })
+    const { id, taskId } = useLocalSearchParams();
+    const { colorScheme, theme } = useContext(ThemeContext);
+    const [todo, setTodo] = useState({});
+    const [todos, setTodos] = useState([]);
+    const [ lists, setLists ] = useState([]);
+    const [loaded, error] = useFonts({ Inter_500Medium });
     const [isModalVisible, setModalVisible] = useState(true); 
-
+    const router = useRouter();
+    
+    // Fetch lists from storage
     useEffect(() => {
         fetchLists((lists) => {
-            const list = lists.find((list) => list.id === parseInt(id))
-            setLists(lists)
-            setTodos(list)
-            const task = list.todos.find((todo) => todo.id === parseInt(taskId))
-            setTodo(task)
-        })
-    }, [id])
+            const list = lists.find((list) => list.id === parseInt(id));
+            setLists(lists);
+            setTodos(list);
+            const task = list.todos.find((todo) => todo.id === parseInt(taskId));
+            setTodo(task);
+        });
+    }, [id]);
 
+    // Check if font has loaded properly
     if (!loaded && !error) {
-        return null
+        return null;
     }
 
-    const styles = createStyles(theme, colorScheme)
+    // Create stylesheet for this specific screen
+    const styles = createStyles(theme, colorScheme);
 
+    // Handle saving changes made to this specific to do task
     const handleSave = async () => {
-        const list = lists.find((list) => list.id === parseInt(id))
-        const task = list.todos.find((todo) => todo.id === parseInt(taskId))
-        const savedTodo = { ...task, title: todo.title }
+        const list = lists.find((list) => list.id === parseInt(id));
+        const task = list.todos.find((todo) => todo.id === parseInt(taskId));
+        const savedTodo = { ...task, title: todo.title };
         
+        // Check if list has other to do tasks already
         if (list.todos) {
-            const otherTasks = list.todos.filter(task => task.id !== parseInt(savedTodo.id))
-            const updatedTodos = [...otherTasks, savedTodo]
-            setTodos(updatedTodos)
-            list.todos = (updatedTodos)
-            list.lastEdited = new Date().toISOString() 
-            const updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))]
-            saveLists(updatedLists)
+            const otherTasks = list.todos.filter(task => task.id !== parseInt(savedTodo.id));
+            const updatedTodos = [...otherTasks, savedTodo];
+            setTodos(updatedTodos);
+            list.todos = (updatedTodos);
+            list.lastEdited = new Date().toISOString(); 
+            const updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))];
+            saveLists(updatedLists);
         } else {
-            const updatedTodos = [savedTodo]
-            setTodos(updatedTodos)
-            list.todos = (updatedTodos)
-            list.lastEdited = new Date().toISOString() 
-            const updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))]
-            saveLists(updatedLists)
+            const updatedTodos = [savedTodo];
+            setTodos(updatedTodos);
+            list.todos = (updatedTodos);
+            list.lastEdited = new Date().toISOString();
+            const updatedLists = [list, ...lists.filter(list => list.id !== parseInt(id))];
+            saveLists(updatedLists);
         }
 
-        setModalVisible(false)
-        router.push(`/list/${id}`)
+        setModalVisible(false);
+        router.push(`/list/${id}`);
     }
 
+    // Cancel editing the task and return to the list page
     const cancelEdit = () => {
-        setModalVisible(false)
-        router.push(`/list/${id}`)
+        setModalVisible(false);
+        router.push(`/list/${id}`);
     }
 
     return (
@@ -75,6 +82,7 @@ export default function EditScreen() {
             >
                 <View style={[styles.inputContainer, {flexDirection: 'column', justifyContent: "center", flex: 1,}]}>
                     <Text style={styles.title}>Edit Task</Text>
+                    {/* Text input to edit the task name */}
                     <View>
                         <TextInput 
                             style={styles.input}
@@ -85,6 +93,7 @@ export default function EditScreen() {
                             onChangeText={(text) => setTodo(prev => ({ ...prev, title: text }))}
                         />
                     </View>
+                    {/* Save and cancel buttons */}
                     <View style={{flexDirection: 'row'}}>
                         <Pressable
                             style={styles.saveButton}
@@ -103,8 +112,8 @@ export default function EditScreen() {
                 <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
             </Modal>
         </SafeAreaView>   
-    )
-}
+    );
+};
 
 function createStyles(theme, colorScheme) {
     return StyleSheet.create({
@@ -167,5 +176,5 @@ function createStyles(theme, colorScheme) {
             margin: 10,
             marginTop: 10,
         },
-    })
-}
+    });
+};
