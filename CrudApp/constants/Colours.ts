@@ -6,7 +6,7 @@ export const Colours = {
         secondary: 'rgba(41, 44, 51, 0.1)',
         icon: '#687076',
         button: 'royalblue',
-        star: 'lightskyblue',
+        star: 'lightblue',
         colours: {
             red: 'darkred',
             green: 'darkgreen',

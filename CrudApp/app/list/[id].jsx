@@ -116,7 +116,7 @@ export default function TodosScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-        <View style={{margin: 12, alignItems: 'center'}}>
+        <View style={{margin: 12, alignItems: 'center', flex: 1}}>
             <View style={styles.inputContainer}>
                 <Pressable onPress={() => handleReturn()}>
                     <Ionicons name="arrow-back-circle" size={44} color="royalblue" />
@@ -255,6 +255,8 @@ function createStyles(theme, colorScheme) {
             borderRadius: 5,
         },
         starredList: {
+            width: '100%',
+            maxWidth: 1024,
             flexGrow: 0,
         },
         title: {

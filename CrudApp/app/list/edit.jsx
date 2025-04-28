@@ -23,7 +23,7 @@ export default function EditListScreen() {
     const colours = [
         { id: '1', darkColour: 'darkred', lightColour: 'lightcoral' },
         { id: '2', darkColour: 'darkgreen' , lightColour: 'lightgreen' },
-        { id: '3', darkColour: 'darkblue' , lightColour: 'lightblue' },
+        { id: '3', darkColour: 'darkblue' , lightColour: 'lightskyblue' },
         { id: '4', darkColour: 'rebeccapurple', lightColour: 'plum' },
     ]
 
@@ -121,13 +121,15 @@ export default function EditListScreen() {
                     </View>
                     <View style={styles.colourpicker}>
                         <Text style={[styles.title, {fontSize: 18}]}>Pick Colour: </Text>
-                        <FlatList
-                            data={colours}
-                            renderItem={renderColourButton}
-                            keyExtractor={(item) => item.id.toString()}
-                            horizontal
-                        />
+                        <View style={{alignContent: 'flex-end'}}>
+                            <FlatList
+                                data={colours}
+                                renderItem={renderColourButton}
+                                keyExtractor={(item) => item.id.toString()}
+                                horizontal
+                            />
                         </View>
+                    </View>
                     <View style={{flexDirection: 'row'}}>
                         <Pressable
                             style={styles.button}

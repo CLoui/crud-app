@@ -91,9 +91,9 @@ export default function Index() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{margin: 12}}>
+      <View style={{margin: 12, flex: 1}}>
         <View style={styles.inputContainer}>
-          <Text style={styles.title}>My Lists</Text>
+          <Text style={styles.title}>📝 My Lists</Text>
           <Pressable onPress={() => handleAddPress()}>
             <Ionicons name="add-circle" size={44} color="royalblue" />
           </Pressable>

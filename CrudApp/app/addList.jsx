@@ -113,13 +113,15 @@ export default function AddListScreen() {
           </View>
           <View style={styles.colourpicker}>
             <Text style={[styles.title, {fontSize: 18, marginTop: 10}]}>Pick Colour: </Text>
-            <FlatList
-              data={colours}
-              renderItem={renderColourButton}
-              keyExtractor={(item) => item.id.toString()}
-              horizontal
-              contentContainerStyle={{ marginTop: 10 }}
-            />
+            <View style={{alignContent: 'flex-end'}}>
+              <FlatList
+                data={colours}
+                renderItem={renderColourButton}
+                keyExtractor={(item) => item.id.toString()}
+                horizontal
+                contentContainerStyle={{ marginTop: 10 }}
+              />
+            </View>
           </View>
           <View style={{flexDirection: 'row'}}>
             <Pressable onPress={handleAddList} style={styles.addButton}>

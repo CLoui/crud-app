@@ -23,7 +23,6 @@ export default function AddScreen() {
             const list = lists.find((list) => list.id === parseInt(id))
             setLists(lists)
             setTodos(list ? list.todos : [])
-            // console.log('add todos: ', todos)
         })   
     }, [id])
 
@@ -69,6 +68,7 @@ export default function AddScreen() {
                 onRequestClose={() => cancelEdit()}
             >
                 <View style={[styles.inputContainer, {flexDirection: 'column', justifyContent: "center", flex: 1,}]}>
+                    <Text style={styles.title}>Add Task</Text>
                     <View>
                         <TextInput 
                             style={styles.input}
@@ -158,6 +158,14 @@ function createStyles(theme, colorScheme) {
         buttonText: {
             fontSize: 18,
             color: colorScheme === 'dark' ? 'black' : 'white',
+        },
+        title: {
+            flex: 1,
+            fontSize: 24,
+            fontFamily: 'Inter_500Medium',
+            color: theme.text,
+            margin: 10,
+            marginTop: 10,
         },
     })
 }

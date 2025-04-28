@@ -74,6 +74,7 @@ export default function EditScreen() {
                 onRequestClose={() => cancelEdit()}
             >
                 <View style={[styles.inputContainer, {flexDirection: 'column', justifyContent: "center", flex: 1,}]}>
+                    <Text style={styles.title}>Edit Task</Text>
                     <View>
                         <TextInput 
                             style={styles.input}
@@ -157,6 +158,14 @@ function createStyles(theme, colorScheme) {
         saveButtonText: {
             fontSize: 18,
             color: colorScheme === 'dark' ? 'black' : 'white',
+        },
+        title: {
+            flex: 1,
+            fontSize: 24,
+            fontFamily: 'Inter_500Medium',
+            color: theme.text,
+            margin: 10,
+            marginTop: 10,
         },
     })
 }
